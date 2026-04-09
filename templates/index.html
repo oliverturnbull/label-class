@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magic 8-Ball</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Magic 8-Ball</h1>
+        <p class="subtitle">Ask a question and the all-knowing 8-Ball shall answer</p>
+
+        <div class="eight-ball" id="eightBall">
+            <div class="ball-outer">
+                <div class="ball-inner">
+                    <div class="triangle" id="triangle">
+                        <span id="answerText">8</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form id="questionForm">
+            <input
+                type="text"
+                id="questionInput"
+                placeholder="Ask the Magic 8-Ball a question..."
+                autocomplete="off"
+                required
+            >
+            <button type="submit" id="askBtn">Ask</button>
+        </form>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
