@@ -60,7 +60,7 @@ def index():
 
 @app.route("/ask", methods=["POST"])
 def ask():
-    data = request.get_json() or {}
+    data = request.get_json(silent=True) or {}
     question = data.get("question", "").strip()
 
     if not question:
