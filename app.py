@@ -1,13 +1,10 @@
-import os
-
-import anthropic
-from dotenv import load_dotenv
+import httpx
 from flask import Flask, jsonify, render_template, request
 
-load_dotenv()
-
 app = Flask(__name__)
-client = anthropic.Anthropic()
+
+OLLAMA_URL = "http://localhost:11434/api/chat"
+OLLAMA_MODEL = "llama3.2"
 
 EIGHT_BALL_RESPONSES = [
     # Affirmative
@@ -66,29 +63,39 @@ def ask():
         return jsonify({"error": "Please ask a question."}), 400
 
     try:
-        message = client.messages.create(
-            model="claude-haiku-4-5-20251001",
-            max_tokens=50,
-            system=SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": question}],
+        resp = httpx.post(
+            OLLAMA_URL,
+            json={
+                "model": OLLAMA_MODEL,
+                "messages": [
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": question},
+                ],
+                "stream": False,
+                "options": {"num_predict": 30},
+            },
+            timeout=30.0,
         )
-        answer = message.content[0].text.strip()
+        resp.raise_for_status()
+        answer = resp.json()["message"]["content"].strip()
 
         # Validate response is a real 8-ball answer
         if answer not in EIGHT_BALL_RESPONSES:
             # Fuzzy match: find closest
             answer_lower = answer.lower().rstrip(".")
-            for resp in EIGHT_BALL_RESPONSES:
-                if resp.lower().rstrip(".") in answer_lower or answer_lower in resp.lower():
-                    answer = resp
+            for r in EIGHT_BALL_RESPONSES:
+                if r.lower().rstrip(".") in answer_lower or answer_lower in r.lower():
+                    answer = r
                     break
             else:
                 answer = "Reply hazy, try again."
 
         return jsonify({"answer": answer})
 
-    except anthropic.APIError as e:
-        return jsonify({"error": f"API error: {e.message}"}), 500
+    except httpx.ConnectError:
+        return jsonify({"error": "Can't reach Ollama. Is it running?"}), 503
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":
