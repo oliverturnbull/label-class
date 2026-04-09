@@ -1,10 +1,14 @@
+import logging
+import os
+
 import httpx
 from flask import Flask, jsonify, render_template, request
 
 app = Flask(__name__)
+logger = logging.getLogger(__name__)
 
-OLLAMA_URL = "http://localhost:11434/api/chat"
-OLLAMA_MODEL = "llama3.2"
+OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434/api/chat")
+OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "llama3.2")
 
 EIGHT_BALL_RESPONSES = [
     # Affirmative
@@ -56,7 +60,7 @@ def index():
 
 @app.route("/ask", methods=["POST"])
 def ask():
-    data = request.get_json()
+    data = request.get_json() or {}
     question = data.get("question", "").strip()
 
     if not question:
@@ -94,8 +98,9 @@ def ask():
 
     except httpx.ConnectError:
         return jsonify({"error": "Can't reach Ollama. Is it running?"}), 503
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    except Exception:
+        logger.exception("Unexpected error in /ask")
+        return jsonify({"error": "An unexpected error occurred."}), 500
 
 
 if __name__ == "__main__":
