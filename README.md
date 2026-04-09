@@ -25,6 +25,13 @@ python app.py
 
 Then open http://localhost:5000
 
+## Configuration
+
+| Variable | Default | Description |
+|---|---|---|
+| `OLLAMA_URL` | `http://localhost:11434/api/chat` | Ollama API endpoint |
+| `OLLAMA_MODEL` | `llama3.2` | Model to use for responses |
+
 ## How it works
 
 Instead of picking a random response, the app sends your question to a local LLM (Llama 3.2 via Ollama) which considers the question and selects the most appropriate classic Magic 8-Ball answer from the original 20 responses. No API keys required.
